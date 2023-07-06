@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Meeting</title>
+    <style>
+        #participantList {
+            margin-bottom: 10px;
+        }
+
+        #videoContainer {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        video {
+            
+    width: 55%;
+    height: 55%;
+    object-fit: cover;
+    margin-right: 30px;
+    margin-bottom: 30px;
+
+
+        }
+		toggleVideoButton {
+		position:center;
+		}
+    </style>
+</head>
+<body>
+    <h2>Video Meeting</h2>
+    <div id="participantList"></div>
+    <div id="videoContainer"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const participantList = document.getElementById('participantList');
+        const videoContainer = document.getElementById('videoContainer');
+        const socket = io();
+
+        let localStream;
+        let localParticipantId;
+
+        // Evenimentul de conectare
+        socket.on('connect', () => {
+            const participantName = prompt('Introduceți numele dvs.:');
+            socket.emit('join', participantName);
+        });
+
+        // Evenimentul pentru actualizarea listei de participanți
+        socket.on('participantsUpdated', (participants) => {
+            participantList.innerHTML = '';
+
+            participants.forEach((participant) => {
+                const participantElement = document.createElement('p');
+                participantElement.innerText = participant.name;
+                participantList.appendChild(participantElement);
+
+                if (participant.id !== localParticipantId) {
+                    createVideoElement(participant.id);
+                }
+            });
+        });
+
+        // Evenimentul pentru primirea fluxului video de la un participant
+        socket.on('videoStream', (stream) => {
+            const videoElement = getVideoElement(stream.id);
+            videoElement.srcObject = stream;
+        });
+
+        // Funcția pentru crearea elementului video pentru un participant
+        function createVideoElement(participantId) {
+            const videoElement = document.createElement('video');
+            videoElement.id = 'video_' + participantId;
+            videoElement.autoplay = true;
+            videoElement.muted = true;
+            videoContainer.appendChild(videoElement);
+
+            const videoControlsContainer = document.createElement('div');
+            videoControlsContainer.id = 'videoControls_' + participantId;
+            videoControlsContainer.classList.add('video-controls');
+            videoContainer.appendChild(videoControlsContainer);
+
+            const toggleMicrophoneButton = document.createElement('button');
+            toggleMicrophoneButton.id = 'toggleMicrophoneButton_' + participantId;
+            toggleMicrophoneButton.textContent = 'Mute Microphone';
+            toggleMicrophoneButton.addEventListener('click', function() {
+                toggleMicrophone(participantId);
+            });
+            videoControlsContainer.appendChild(toggleMicrophoneButton);
+
+            const toggleVideoButton = document.createElement('button');
+            toggleVideoButton.id = 'toggleVideoButton_' + participantId;
+            toggleVideoButton.textContent = 'Turn Off Video';
+            toggleVideoButton.addEventListener('click', function() {
+                toggleVideo(participantId);
+            });
+            videoControlsContainer.appendChild(toggleVideoButton);
+
+            const shareScreenButton = document.createElement('button');
+            shareScreenButton.id = 'shareScreenButton_' + participantId;
+            shareScreenButton.textContent = 'Share Screen';
+            shareScreenButton.addEventListener('click', function() {
+                shareScreen(participantId);
+            });
+            videoControlsContainer.appendChild(shareScreenButton);
+        }
+
+        // Funcția pentru obținerea elementului video pentru un participant
+        function getVideoElement(participantId) {
+            return document.getElementById('video_' + participantId);
+        }
+
+        // Funcția pentru obținerea containerului de controale video pentru un participant
+        function getVideoControlsContainer(participantId) {
+            return document.getElementById('videoControls_' + participantId);
+        }
+
+        // Funcția pentru comutarea stării microfonului
+        function toggleMicrophone(participantId) {
+            const audioTracks = getVideoElement(participantId).srcObject.getAudioTracks();
+
+            if (audioTracks.length > 0) {
+                audioTracks[0].enabled = !audioTracks[0].enabled;
+
+                const toggleMicrophoneButton = document.getElementById('toggleMicrophoneButton_' + participantId);
+                toggleMicrophoneButton.textContent = audioTracks[0].enabled ? 'Mute Microphone' : 'Unmute Microphone';
+            }
+        }
+</script><center><h1><script>
+        // Funcția pentru comutarea stării video-ului
+        function toggleVideo(participantId) {
+            const videoTracks = getVideoElement(participantId).srcObject.getVideoTracks();
+
+            if (videoTracks.length > 0) {
+                videoTracks[0].enabled = !videoTracks[0].enabled;
+
+                const toggleVideoButton = document.getElementById('toggleVideoButton_' + participantId);
+                toggleVideoButton.textContent = videoTracks[0].enabled ? 'Turn Off Video' : 'Turn On Video';
+            }
+        }
+
+        // Funcția pentru partajarea ecranului
+
+			function shareScreen(participantId) {
+				if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+					navigator.mediaDevices.getDisplayMedia({ video: true })
+					.then((stream) => {
+					const videoElement = getVideoElement(participantId);
+						videoElement.srcObject = stream;
+
+						socket.emit('videoStream', stream);
+            })
+            .catch((error) => {
+                console.log('Eroare la partajarea ecranului:', error);
+            });
+    } else {
+        console.log('Partajarea ecranului nu este suportată în acest browser.');
+    }
+}
+
+
+        // Obțineți fluxul video local
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then((stream) => {
+                localStream = stream;
+                localParticipantId = socket.id;
+
+                createVideoElement(localParticipantId);
+                getVideoElement(localParticipantId).srcObject = localStream;
+
+                socket.emit('videoStream', localStream);
+            })
+            .catch((error) => {
+                console.log('Eroare la obținerea fluxului media:', error);
+            });
+    </script>
+</body>
+s</html>

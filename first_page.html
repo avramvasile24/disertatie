@@ -1,0 +1,47 @@
+<html>
+<head>
+	    <meta charset="utf-8" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	    <meta name="description" content="" />
+	    <meta name="author" content="" />
+	    <title>LOGIN FAILED</title>
+	    <link href="css/styles.css" rel="stylesheet" />
+	</head>
+<script>
+		window.onload = function() {
+			var seconds = 5; // numarul de secunde pana la expirare
+
+			// functie care actualizeaza timerul la fiecare secunda
+			var countdown = setInterval(function() {
+				// actualizam numarul de secunde ramase
+				seconds--;
+				
+				// afisam numarul de secunde ramase
+				document.getElementById("timer").innerHTML = seconds + "   secunde";
+
+				// verificam daca a expirat timpul
+				if (seconds == 0) {
+					// oprim timerul
+					clearInterval(countdown);
+					
+					// afisam un mesaj de expirare
+					document.getElementById("timer").innerHTML = "Timpul a expirat!";
+				}
+			}, 1000); // 1000 milisecunde = 1 secunda
+		}
+	</script>
+	<body class="bg-primary">
+	    <main>
+	        <div class="container">
+	            <div class="row justify-content-center">
+	                <div class="col-lg-5">
+	                    <div class="card shadow-lg border-0 rounded-lg mt-5">
+	                        <div class="card-header">
+	                            <h3 class="text-center titlu-sign-in-up font-weight-light my-4">AUTENTIFICARE ESUATA!<br><br><center><h5>Vei fi redirecționat în<br> <p id="timer"></p><meta http-equiv="refresh" content="5;url=index.php" /> CATRE PAGINA DE LOGARE!</h5>
+</h3>
+	                        </div></div></div></div></div><body>
+
+    <body>
+</head>
+</html>
